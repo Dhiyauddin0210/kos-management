@@ -1,0 +1,34 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Setting extends Model
+{
+    protected $fillable = [
+        'key',
+        'value',
+    ];
+
+    public static function get(string $key, mixed $default = null): mixed
+    {
+        $value = static::where('key', $key)->value('value');
+
+        return $value ?? $default;
+    }
+
+    public static function set(string $key, mixed $value): static
+    {
+        return static::updateOrCreate(['key' => $key], ['value' => $value]);
+    }
+
+    public static function many(array $keys, array $defaults = []): array
+    {
+        $result = [];
+        foreach ($keys as $key) {
+            $result[$key] = static::get($key, $defaults[$key] ?? null);
+        }
+        return $result;
+    }
+}
