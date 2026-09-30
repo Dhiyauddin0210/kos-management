@@ -33,18 +33,16 @@ class TenantController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        $roomFilterOptions = $this->roomOptions(Room::with('property')->orderBy('property_id')->orderBy('room_number')->get());
+        $roomFilterOptions = $this->roomOptions(Room::with('property')->orderBy('property_id', 'asc')->orderBy('room_number', 'asc')->get());
 
         return view('admin.tenants.index', compact('tenants', 'roomFilterOptions'));
     }
 
     public function create(Request $request)
     {
-        // Dropdown hanya menampilkan kamar yang tersedia
         $rooms = Room::with('property')->where('status', 'available')
-            ->orderBy('property_id')->orderBy('room_number')->get();
+            ->orderBy('property_id', 'asc')->orderBy('room_number', 'asc')->get();
 
-        // Data pre-fill dari lead (kalau ada ?from_lead=X)
         $prefill = [
             'from_lead' => $request->query('from_lead'),
             'full_name' => $request->query('full_name', ''),
@@ -63,19 +61,16 @@ class TenantController extends Controller
     {
         $data = $request->validated();
 
-        // Password kosong -> generate otomatis dan tampilkan ke admin sekali saja
         $generated     = empty($data['password']);
         $plainPassword = $generated ? Str::random(10) : $data['password'];
 
         DB::transaction(function () use ($data, $plainPassword) {
-            // Kunci baris kamar supaya 2 admin tidak bisa mengambil kamar yang sama bersamaan
             $room = Room::whereKey($data['room_id'])->lockForUpdate()->firstOrFail();
 
             if ($room->status !== 'available') {
                 throw ValidationException::withMessages(['room_id' => 'Kamar yang dipilih sudah tidak tersedia.']);
             }
 
-            // 1) Buat akun user (role penghuni)
             $user = User::create([
                 'name'              => $data['full_name'],
                 'email'             => $data['email'],
@@ -85,7 +80,6 @@ class TenantController extends Controller
                 'email_verified_at' => now(),
             ]);
 
-            // 2) Buat data penghuni. Tanggal selesai dihitung server (tidak percaya input klien).
             $start = Carbon::parse($data['start_date']);
 
             Tenant::create([
@@ -101,7 +95,6 @@ class TenantController extends Controller
                 'status'          => 'active',
             ]);
 
-            // 3) Kamar jadi terisi
             $room->update(['status' => 'occupied']);
         });
 
@@ -130,11 +123,10 @@ class TenantController extends Controller
     {
         $tenant->load('user');
 
-        // Kamar tersedia + kamar yang sedang ditempati penghuni ini
         $rooms = Room::with('property')
             ->where('status', 'available')
             ->orWhere('id', $tenant->room_id)
-            ->orderBy('property_id')->orderBy('room_number')->get();
+            ->orderBy('property_id', 'asc')->orderBy('room_number', 'asc')->get();
 
         return view('admin.tenants.edit', [
             'tenant'      => $tenant,
@@ -148,7 +140,6 @@ class TenantController extends Controller
         $isActive = $tenant->status === 'active';
 
         DB::transaction(function () use ($data, $tenant, $isActive) {
-            // ---- Update akun user ----
             $userData = [
                 'name'  => $data['full_name'],
                 'email' => $data['email'],
@@ -159,7 +150,6 @@ class TenantController extends Controller
             }
             $tenant->user->update($userData);
 
-            // ---- Pindah kamar? (hanya untuk penghuni aktif) ----
             $roomId = $tenant->room_id;
 
             if ($isActive && (int) $data['room_id'] !== $tenant->room_id) {
@@ -169,12 +159,11 @@ class TenantController extends Controller
                     throw ValidationException::withMessages(['room_id' => 'Kamar tujuan sudah tidak tersedia.']);
                 }
 
-                Room::whereKey($tenant->room_id)->update(['status' => 'available']); // kamar lama dikosongkan
-                $newRoom->update(['status' => 'occupied']);                            // kamar baru terisi
+                Room::whereKey($tenant->room_id)->update(['status' => 'available']);
+                $newRoom->update(['status' => 'occupied']);
                 $roomId = $newRoom->id;
             }
 
-            // ---- Update data penghuni ----
             $fields = [
                 'room_id'         => $roomId,
                 'full_name'       => $data['full_name'],
@@ -185,8 +174,6 @@ class TenantController extends Controller
                 'duration_months' => (int) $data['duration_months'],
             ];
 
-            // Penghuni aktif: hitung ulang tanggal selesai. Penghuni yang sudah checkout:
-            // end_date dibiarkan (itu tanggal checkout sebenarnya).
             if ($isActive) {
                 $fields['end_date'] = Carbon::parse($data['start_date'])->addMonths((int) $data['duration_months']);
             }
@@ -198,7 +185,6 @@ class TenantController extends Controller
             ->with('success', 'Data penghuni berhasil diperbarui.');
     }
 
-    /** Checkout: penghuni nonaktif, kamar kembali tersedia, tanggal selesai = hari ini. */
     public function checkout(Tenant $tenant)
     {
         if ($tenant->status !== 'active') {
@@ -221,14 +207,12 @@ class TenantController extends Controller
     public function destroy(Tenant $tenant)
     {
         DB::transaction(function () use ($tenant) {
-            // Kalau masih aktif, kosongkan kamarnya dulu
             if ($tenant->status === 'active') {
                 $tenant->room()->update(['status' => 'available']);
             }
 
             $user = $tenant->user;
 
-            // Tagihan, pembayaran, maintenance, dan perpanjangan ikut terhapus via FK cascade
             $tenant->delete();
             $user?->delete();
         });
@@ -237,7 +221,6 @@ class TenantController extends Controller
             ->with('success', 'Penghuni dan akunnya berhasil dihapus.');
     }
 
-    /** Ubah koleksi kamar menjadi array [id => "A01 - Kos Adin (Standard, Rp 800.000)"]. */
     private function roomOptions($rooms): array
     {
         return $rooms->mapWithKeys(fn (Room $r) => [

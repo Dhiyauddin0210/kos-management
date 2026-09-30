@@ -36,10 +36,10 @@ class InvoiceController extends Controller
 
         // Statistik
         $stats = [
-            'total_invoices'  => Invoice::where('tenant_id', $tenant->id)->count(),
-            'total_paid'      => Invoice::where('tenant_id', $tenant->id)->where('status', 'paid')->count(),
-            'total_unpaid'    => Invoice::where('tenant_id', $tenant->id)->whereIn('status', ['unpaid', 'pending', 'overdue'])->count(),
-            'total_due'       => Invoice::where('tenant_id', $tenant->id)->whereIn('status', ['unpaid', 'pending', 'overdue'])->sum('amount'),
+            'total_invoices' => Invoice::where('tenant_id', $tenant->id)->count(),
+            'total_paid'     => Invoice::where('tenant_id', $tenant->id)->where('status', 'paid')->count(),
+            'total_unpaid'   => Invoice::where('tenant_id', $tenant->id)->whereIn('status', ['unpaid', 'pending', 'overdue'])->count(),
+            'total_due'      => Invoice::where('tenant_id', $tenant->id)->whereIn('status', ['unpaid', 'pending', 'overdue'])->sum('amount'),
         ];
 
         $statusLabels = self::STATUS_LABELS;
@@ -59,7 +59,7 @@ class InvoiceController extends Controller
         $invoice->load(['tenant.room.property', 'payments.verifier']);
 
         // Rekening bank untuk transfer
-        $bankAccounts = \App\Models\BankAccount::orderByDesc('is_primary')->orderBy('bank_name')->get();
+        $bankAccounts = \App\Models\BankAccount::orderByDesc('is_primary')->orderBy('bank_name', 'asc')->get();
 
         return view('tenant.invoices.show', compact('invoice', 'bankAccounts'));
     }

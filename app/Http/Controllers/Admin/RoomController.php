@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Storage;
 
 class RoomController extends Controller
 {
-    /** Pilihan fasilitas (checkbox) di form. */
     public const FACILITIES = ['AC', 'WiFi', 'KM Dalam', 'Water Heater', 'TV', 'Kasur', 'Lemari', 'Meja'];
 
     public const STATUS_LABELS = [
@@ -26,12 +25,12 @@ class RoomController extends Controller
             ->when($request->filled('property_id'), fn ($q) => $q->where('property_id', $request->property_id))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->when($request->filled('search'), fn ($q) => $q->where('room_number', 'like', '%' . $request->search . '%'))
-            ->orderBy('property_id')
-            ->orderBy('room_number')
+            ->orderBy('property_id', 'asc')
+            ->orderBy('room_number', 'asc')
             ->paginate(10)
-            ->withQueryString(); // filter tetap terbawa saat pindah halaman
+            ->withQueryString();
 
-        $properties   = Property::orderBy('name')->pluck('name', 'id');
+        $properties   = Property::orderBy('name', 'asc')->pluck('name', 'id');
         $statusLabels = self::STATUS_LABELS;
 
         return view('admin.rooms.index', compact('rooms', 'properties', 'statusLabels'));
@@ -40,11 +39,10 @@ class RoomController extends Controller
     public function create(Request $request)
     {
         return view('admin.rooms.create', [
-            'properties'      => Property::where('is_active', true)->orderBy('name')->pluck('name', 'id'),
+            'properties'      => Property::where('is_active', true)->orderBy('name', 'asc')->pluck('name', 'id'),
             'facilityOptions' => self::FACILITIES,
-            // Kamar baru hanya boleh Tersedia / Perbaikan. 'Terisi' otomatis saat ada penghuni.
             'statusOptions'   => collect(self::STATUS_LABELS)->only(['available', 'maintenance'])->all(),
-            'selectedProperty' => $request->query('property_id'), // dari tombol "Tambah Kamar" di halaman properti
+            'selectedProperty' => $request->query('property_id'),
         ]);
     }
 
@@ -53,7 +51,7 @@ class RoomController extends Controller
         $data = $request->validated();
 
         $data['facilities'] = $this->buildFacilities($request);
-        $data['status']     = $data['status'] ?? 'available'; // kamar baru default tersedia
+        $data['status']     = $data['status'] ?? 'available';
         unset($data['facilities_other']);
 
         if ($request->hasFile('photo')) {
@@ -70,7 +68,6 @@ class RoomController extends Controller
     {
         $room->load(['property', 'activeTenant.user']);
 
-        // Riwayat tagihan lewat relasi hasManyThrough (tenants -> invoices)
         $invoices = $room->invoices()
             ->with('tenant')
             ->orderByDesc('invoices.year')
@@ -85,9 +82,7 @@ class RoomController extends Controller
     {
         return view('admin.rooms.edit', [
             'room'       => $room,
-            'properties' => Property::orderBy('name')->pluck('name', 'id'),
-            // Gabungkan fasilitas bawaan dengan fasilitas kamar ini yang tidak ada di daftar
-            // (mis. data seeder "Kipas Angin"), supaya tidak hilang saat disimpan.
+            'properties' => Property::orderBy('name', 'asc')->pluck('name', 'id'),
             'facilityOptions' => array_values(array_unique(array_merge(self::FACILITIES, $room->facilities ?? []))),
             'statusOptions'   => self::STATUS_LABELS,
         ]);
@@ -97,7 +92,6 @@ class RoomController extends Controller
     {
         $data = $request->validated();
 
-        // Jaga konsistensi status kamar dengan data penghuni
         $hasActiveTenant = $room->activeTenant()->exists();
         $newStatus       = $data['status'] ?? $room->status;
 
@@ -133,7 +127,6 @@ class RoomController extends Controller
 
     public function destroy(Room $room)
     {
-        // Cegah hapus kamar yang masih dihuni (akan ikut menghapus data penghuni via cascade)
         if ($room->activeTenant()->exists()) {
             return back()->with('error', 'Kamar tidak bisa dihapus karena masih dihuni penghuni aktif.');
         }
@@ -148,7 +141,6 @@ class RoomController extends Controller
             ->with('success', 'Kamar berhasil dihapus.');
     }
 
-    /** Gabungkan checkbox + input "fasilitas lainnya" (pisah koma) jadi 1 array unik. */
     private function buildFacilities(Request $request): array
     {
         $checked = (array) $request->input('facilities', []);

@@ -7,7 +7,6 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class PaymentController extends Controller
 {
@@ -17,9 +16,6 @@ class PaymentController extends Controller
         'rejected' => 'Ditolak',
     ];
 
-    /**
-     * List riwayat pembayaran milik tenant yang login.
-     */
     public function index(Request $request)
     {
         $tenant = auth()->user()->tenant;
@@ -33,10 +29,10 @@ class PaymentController extends Controller
         $payments = $query->paginate(15)->withQueryString();
 
         $stats = [
-            'total'     => Payment::whereHas('invoice', fn ($q) => $q->where('tenant_id', $tenant->id))->count(),
-            'pending'   => Payment::whereHas('invoice', fn ($q) => $q->where('tenant_id', $tenant->id))->where('status', 'pending')->count(),
-            'verified'  => Payment::whereHas('invoice', fn ($q) => $q->where('tenant_id', $tenant->id))->where('status', 'verified')->count(),
-            'rejected'  => Payment::whereHas('invoice', fn ($q) => $q->where('tenant_id', $tenant->id))->where('status', 'rejected')->count(),
+            'total'    => Payment::whereHas('invoice', fn ($q) => $q->where('tenant_id', $tenant->id))->count(),
+            'pending'  => Payment::whereHas('invoice', fn ($q) => $q->where('tenant_id', $tenant->id))->where('status', 'pending')->count(),
+            'verified' => Payment::whereHas('invoice', fn ($q) => $q->where('tenant_id', $tenant->id))->where('status', 'verified')->count(),
+            'rejected' => Payment::whereHas('invoice', fn ($q) => $q->where('tenant_id', $tenant->id))->where('status', 'rejected')->count(),
         ];
 
         $statusLabels = self::STATUS_LABELS;
@@ -44,9 +40,6 @@ class PaymentController extends Controller
         return view('tenant.payments.index', compact('payments', 'stats', 'statusLabels'));
     }
 
-    /**
-     * Upload bukti transfer untuk invoice.
-     */
     public function store(Request $request, Invoice $invoice)
     {
         // Pastikan invoice milik tenant yang login
@@ -55,7 +48,6 @@ class PaymentController extends Controller
             abort(403, 'Anda tidak berhak mengakses tagihan ini.');
         }
 
-        // Cek status invoice
         if ($invoice->status === 'paid') {
             return back()->with('error', 'Tagihan ini sudah lunas.');
         }
@@ -76,10 +68,8 @@ class PaymentController extends Controller
         ]);
 
         DB::transaction(function () use ($validated, $invoice, $request) {
-            // Simpan file bukti
             $proofPath = $request->file('proof')->store('proofs', 'public');
 
-            // Bikin record payment
             Payment::create([
                 'invoice_id'   => $invoice->id,
                 'amount'       => $validated['amount'],
@@ -89,7 +79,6 @@ class PaymentController extends Controller
                 'notes'        => $validated['notes'] ?? null,
             ]);
 
-            // Update status invoice jadi pending
             $invoice->update(['status' => 'pending']);
         });
 

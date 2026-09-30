@@ -76,7 +76,7 @@ class InvoiceController extends Controller
     {
         $tenants = Tenant::with('room.property')
             ->where('status', 'active')
-            ->orderBy('full_name')
+            ->orderBy('full_name', 'asc')
             ->get();
 
         $months = collect(range(1, 12))->mapWithKeys(fn ($m) => [$m => Carbon::create()->month($m)->translatedFormat('F')])->all();

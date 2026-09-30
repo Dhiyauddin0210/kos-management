@@ -26,17 +26,21 @@
 
 @php
     $menu = [
-        ['Dashboard',       'layout-dashboard', 'tenant.dashboard',  'tenant.dashboard'],
-        ['Tagihan Saya',    'receipt',          'tenant.invoices.index', 'tenant.invoices.*'],
-        ['Pembayaran Saya', 'credit-card',      'tenant.payments.index', 'tenant.payments.*'],
+        ['Dashboard',        'layout-dashboard', 'tenant.dashboard',          'tenant.dashboard'],
+        ['Tagihan Saya',     'receipt',          'tenant.invoices.index',     'tenant.invoices.*'],
+        ['Pembayaran Saya',  'credit-card',      'tenant.payments.index',     'tenant.payments.*'],
+        ['Lapor Kerusakan',  'wrench',           'tenant.maintenances.index', 'tenant.maintenances.*'],
+        ['Perpanjangan',     'refresh-cw',       'tenant.extensions.index',   'tenant.extensions.*'],
     ];
 
     $resourceLabels = [
-        'dashboard' => 'Dashboard',
-        'invoices'  => 'Tagihan Saya',
-        'payments'  => 'Pembayaran Saya',
+        'dashboard'    => 'Dashboard',
+        'invoices'     => 'Tagihan Saya',
+        'payments'     => 'Pembayaran Saya',
+        'maintenances' => 'Lapor Kerusakan',
+        'extensions'   => 'Perpanjangan',
     ];
-    $actionLabels = ['show' => 'Detail'];
+    $actionLabels = ['show' => 'Detail', 'create' => 'Buat'];
 
     $parts  = explode('.', request()->route()?->getName() ?? '');
     $crumbs = [['Penghuni', route('tenant.dashboard')]];

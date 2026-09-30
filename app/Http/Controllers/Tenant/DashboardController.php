@@ -14,35 +14,29 @@ class DashboardController extends Controller
         $user = auth()->user();
         $tenant = $user->tenant()->with(['room.property'])->firstOrFail();
 
-        // Tagihan bulan ini
         $currentInvoice = Invoice::where('tenant_id', $tenant->id)
             ->where('month', now()->month)
             ->where('year', now()->year)
             ->first();
 
-        // Tagihan belum lunas
         $unpaidInvoices = Invoice::where('tenant_id', $tenant->id)
             ->whereIn('status', ['unpaid', 'pending', 'overdue'])
-            ->orderBy('due_date')
+            ->orderBy('due_date', 'asc')
             ->get();
 
-        // Total tunggakan
         $totalDue = $unpaidInvoices->sum('amount');
 
-        // Sisa hari kontrak
-        $daysLeft = $tenant->end_date ? now()->diffInDays($tenant->end_date, false) : 0;
+        $daysLeft = $tenant->end_date ? (int) now()->startOfDay()->diffInDays($tenant->end_date->startOfDay(), false) : 0;
 
-        // Tagihan terbaru (5)
         $recentInvoices = Invoice::where('tenant_id', $tenant->id)
-            ->orderByDesc('year')
-            ->orderByDesc('month')
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
             ->limit(5)
             ->get();
 
-        // Pembayaran terbaru (5)
         $recentPayments = Payment::whereHas('invoice', fn ($q) => $q->where('tenant_id', $tenant->id))
             ->with('invoice')
-            ->orderByDesc('payment_date')
+            ->orderBy('payment_date', 'desc')
             ->limit(5)
             ->get();
 

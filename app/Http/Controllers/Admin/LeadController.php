@@ -58,11 +58,10 @@ class LeadController extends Controller
     {
         $lead->load(['property', 'room.property']);
 
-        // Kamar tersedia untuk opsi convert (kalau nanti mau langsung pilih)
         $availableRooms = Room::with('property')
             ->where('status', 'available')
-            ->orderBy('property_id')
-            ->orderBy('room_number')
+            ->orderBy('property_id', 'asc')
+            ->orderBy('room_number', 'asc')
             ->get();
 
         $statusLabels = self::STATUS_LABELS;
@@ -92,18 +91,12 @@ class LeadController extends Controller
             ->with('success', 'Lead berhasil dihapus.');
     }
 
-    /**
-     * Convert lead ke form tambah penghuni dengan data pre-filled.
-     * Redirect ke /admin/tenants/create dengan query string berisi data lead.
-     */
     public function convert(Lead $lead)
     {
-        // Tandai lead sebagai contacted kalau masih new
         if ($lead->status === 'new') {
             $lead->update(['status' => 'contacted']);
         }
 
-        // Redirect ke form tenant create dengan data pre-filled
         return redirect()->route('admin.tenants.create', [
             'from_lead' => $lead->id,
             'full_name' => $lead->name,

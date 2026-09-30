@@ -32,7 +32,7 @@ class SettingController extends Controller
             'reminder_days_before'  => 3,
         ]);
 
-        $bankAccounts = BankAccount::orderByDesc('is_primary')->orderBy('bank_name')->get();
+        $bankAccounts = BankAccount::orderByDesc('is_primary')->orderBy('bank_name', 'asc')->get();
 
         return view('admin.settings.index', compact('settings', 'bankAccounts'));
     }
@@ -72,15 +72,11 @@ class SettingController extends Controller
             ->with('success', 'Pengaturan berhasil disimpan.');
     }
 
-    /**
-     * Download QR sebagai SVG (ga butuh imagick extension).
-     */
     public function qrCode(Request $request)
     {
         $url = $request->query('url') ?: Setting::get('qr_base_url', url('/kos'));
         $size = (int) ($request->query('size') ?: 600);
 
-        // Pake format SVG biar ga butuh imagick
         $qr = QrCode::format('svg')
             ->size($size)
             ->margin(2)
@@ -94,9 +90,6 @@ class SettingController extends Controller
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 
-    /**
-     * Preview QR sebagai SVG inline (langsung tampil di img src).
-     */
     public function qrPreview(Request $request)
     {
         $url = $request->query('url') ?: Setting::get('qr_base_url', url('/kos'));

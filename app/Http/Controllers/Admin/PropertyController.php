@@ -26,7 +26,6 @@ class PropertyController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('photo')) {
-            // Tersimpan di storage/app/public/properties/
             $data['photo'] = $request->file('photo')->store('properties', 'public');
         }
 
@@ -38,7 +37,7 @@ class PropertyController extends Controller
 
     public function show(Property $property)
     {
-        $property->load(['rooms' => fn ($q) => $q->with('activeTenant')->orderBy('room_number')]);
+        $property->load(['rooms' => fn ($q) => $q->with('activeTenant')->orderBy('room_number', 'asc')]);
 
         return view('admin.properties.show', compact('property'));
     }
@@ -53,13 +52,12 @@ class PropertyController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('photo')) {
-            // Hapus foto lama supaya storage tidak menumpuk
             if ($property->photo) {
                 Storage::disk('public')->delete($property->photo);
             }
             $data['photo'] = $request->file('photo')->store('properties', 'public');
         } else {
-            unset($data['photo']); // tidak upload baru -> pertahankan foto lama
+            unset($data['photo']);
         }
 
         $property->update($data);
@@ -70,8 +68,6 @@ class PropertyController extends Controller
 
     public function destroy(Property $property)
     {
-        // Hard delete. Kamar (dan turunannya) ikut terhapus oleh FK cascade di database,
-        // tapi file fotonya harus kita hapus manual.
         foreach ($property->rooms as $room) {
             if ($room->photo) {
                 Storage::disk('public')->delete($room->photo);
