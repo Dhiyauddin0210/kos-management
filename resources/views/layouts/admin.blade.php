@@ -40,6 +40,7 @@
             ['Leads',        'inbox',            'admin.leads.index',      'admin.leads.*'],
             ['Maintenance',  'wrench',           'admin.maintenances.index','admin.maintenances.*'],
             ['Perpanjangan', 'refresh-cw',       'admin.extensions.index', 'admin.extensions.*'],
+            ['Ulasan',       'star',             'admin.reviews.index',    'admin.reviews.*'],
         ],
         'PENGATURAN' => [
             ['Pengaturan',   'settings',         'admin.settings.index',   'admin.settings.*'],
@@ -49,7 +50,7 @@
     $resourceLabels = [
         'dashboard' => 'Dashboard', 'properties' => 'Properti', 'rooms' => 'Kamar', 'tenants' => 'Penghuni',
         'invoices' => 'Tagihan', 'payments' => 'Pembayaran', 'leads' => 'Leads', 'maintenances' => 'Maintenance',
-        'extensions' => 'Perpanjangan', 'settings' => 'Pengaturan',
+        'extensions' => 'Perpanjangan', 'reviews' => 'Ulasan', 'settings' => 'Pengaturan',
     ];
     $actionLabels = ['create' => 'Tambah', 'edit' => 'Edit', 'show' => 'Detail'];
 
@@ -170,7 +171,6 @@
             </div>
 
             <div class="flex items-center gap-2">
-                {{-- Notification Bell --}}
                 <x-notification-bell />
 
                 <x-dropdown align="right" width="48">

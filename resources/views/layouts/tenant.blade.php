@@ -31,6 +31,7 @@
         ['Pembayaran Saya',  'credit-card',      'tenant.payments.index',     'tenant.payments.*'],
         ['Lapor Kerusakan',  'wrench',           'tenant.maintenances.index', 'tenant.maintenances.*'],
         ['Perpanjangan',     'refresh-cw',       'tenant.extensions.index',   'tenant.extensions.*'],
+        ['Ulasan Kos',       'star',             'tenant.reviews.index',      'tenant.reviews.*'],
     ];
 
     $resourceLabels = [
@@ -39,6 +40,7 @@
         'payments'     => 'Pembayaran Saya',
         'maintenances' => 'Lapor Kerusakan',
         'extensions'   => 'Perpanjangan',
+        'reviews'      => 'Ulasan Kos',
     ];
     $actionLabels = ['show' => 'Detail', 'create' => 'Buat'];
 
