@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| PUBLIC (tanpa login)
+| PUBLIC
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
@@ -37,7 +37,7 @@ Route::get('/kos/thanks', [PublicController::class, 'thanks'])->name('public.tha
 
 /*
 |--------------------------------------------------------------------------
-| DASHBOARD REDIRECT (sesuai role)
+| DASHBOARD REDIRECT
 |--------------------------------------------------------------------------
 */
 Route::get('/dashboard', function () {
@@ -60,7 +60,7 @@ Route::get('/dashboard', function () {
 
 /*
 |--------------------------------------------------------------------------
-| PROFILE (auth only)
+| PROFILE
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
@@ -85,11 +85,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('tenants', TenantController::class);
     Route::post('tenants/{tenant}/checkout', [TenantController::class, 'checkout'])->name('tenants.checkout');
 
-    // Tagihan
-    Route::resource('invoices', InvoiceController::class)->except(['edit', 'update']);
-    Route::post('invoices/generate', [InvoiceController::class, 'generate'])->name('invoices.generate');
-    Route::post('invoices/{invoice}/send-reminder', [InvoiceController::class, 'sendReminder'])->name('invoices.send-reminder');
+    // === TAGIHAN (INVOICES) ===
+    // Route custom HARUS di atas resource biar ga ketiban {invoice}
     Route::get('invoices/export', [InvoiceController::class, 'export'])->name('invoices.export');
+    Route::post('invoices/generate', [InvoiceController::class, 'generate'])->name('invoices.generate');
+
+    Route::resource('invoices', InvoiceController::class)->except(['edit', 'update']);
+
+    Route::post('invoices/{invoice}/send-reminder', [InvoiceController::class, 'sendReminder'])->name('invoices.send-reminder');
 
     // Pembayaran
     Route::resource('payments', PaymentController::class)->only(['index', 'show', 'destroy']);
@@ -108,7 +111,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('extensions/{extension}/approve', [ExtensionController::class, 'approve'])->name('extensions.approve');
     Route::post('extensions/{extension}/reject', [ExtensionController::class, 'reject'])->name('extensions.reject');
 
-    // Ulasan (Reviews)
+    // Ulasan
     Route::resource('reviews', ReviewController::class)->only(['index', 'show', 'destroy']);
     Route::post('reviews/{review}/approve', [ReviewController::class, 'approve'])->name('reviews.approve');
     Route::post('reviews/{review}/reject', [ReviewController::class, 'reject'])->name('reviews.reject');
@@ -125,7 +128,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 /*
 |--------------------------------------------------------------------------
-| TENANT PANEL (Penghuni)
+| TENANT PANEL
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth', 'tenant'])->prefix('tenant')->name('tenant.')->group(function () {
@@ -153,7 +156,7 @@ Route::middleware(['auth', 'tenant'])->prefix('tenant')->name('tenant.')->group(
     Route::post('extensions', [TenantExtensionController::class, 'store'])->name('extensions.store');
     Route::get('extensions/{extension}', [TenantExtensionController::class, 'show'])->name('extensions.show');
 
-    // Ulasan (Reviews)
+    // Ulasan
     Route::get('reviews', [TenantReviewController::class, 'index'])->name('reviews.index');
     Route::post('reviews', [TenantReviewController::class, 'store'])->name('reviews.store');
     Route::put('reviews/{review}', [TenantReviewController::class, 'update'])->name('reviews.update');

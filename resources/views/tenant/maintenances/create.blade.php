@@ -39,7 +39,7 @@
                     Deskripsi Kerusakan <span class="text-red-500">*</span>
                 </label>
                 <textarea id="description" name="description" rows="5" required maxlength="1000"
-                          placeholder="Jelaskan detail kerusakan. Contoh: AC di kamar sudah 3 hari hanya mengeluarkan angin, tidak dingin sama sekali."
+                          placeholder="Jelaskan detail kerusakan."
                           class="w-full rounded-lg border-slate-300 text-sm focus:border-emerald-500 focus:ring-emerald-500">{{ old('description') }}</textarea>
                 @error('description') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
             </div>
@@ -63,15 +63,15 @@
                 </label>
                 <input type="file" id="photo" name="photo" accept="image/*"
                        class="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-emerald-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-emerald-700 hover:file:bg-emerald-100">
-                <p class="mt-1 text-xs text-slate-500">Format JPG/PNG/WEBP, maks 2 MB. Upload biar admin cepat paham.</p>
+                <p class="mt-1 text-xs text-slate-500">Format JPG/PNG/WEBP, maks 2 MB.</p>
                 @error('photo') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
             </div>
 
             <div class="flex items-center gap-3 border-t border-slate-100 pt-5">
-                </x-ui.button type="submit">
+                <x-ui.button type="submit">
                     <x-icon name="check" :size="16" />
                     Kirim Laporan
-                </x-button>
+                </x-ui.button>
                 <x-ui.button :href="route('tenant.maintenances.index')" variant="secondary">Batal</x-ui.button>
             </div>
         </form>
