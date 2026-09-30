@@ -171,16 +171,16 @@ Setelah login, otomatis redirect:
 ## 📸 Screenshot
 
 ### Landing Page
-![Landing Page](screenshots/landing.png)
+![Landing Page](landing.png)
 
 ### Login Page
-![Login](screenshots/login.png)
+![Login](login.png)
 
 ### Admin Dashboard
-![Admin Dashboard](screenshots/admin-dashboard.png)
+![Admin Dashboard](admindsh.png)
 
 ### Penghuni Dashboard
-![Penghuni Dashboard](screenshots/tenant-dashboard.png)
+![Penghuni Dashboard](pnghuni.png)
 
 *(Tambah screenshot lain setelah di-upload)*
 
