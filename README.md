@@ -164,8 +164,6 @@ Setelah login, otomatis redirect:
 
 [![Demo Video](https://img.shields.io/badge/YouTube-Watch-red?style=flat&logo=youtube)](https://youtu.be/gr_H8QldiKk?si=WEcBkBbLiL8u7d7E)
 
-*(Update link setelah upload ke YouTube)*
-
 ---
 
 ## 📸 Screenshot
@@ -182,7 +180,6 @@ Setelah login, otomatis redirect:
 ### Penghuni Dashboard
 ![Penghuni Dashboard](pnghuni.png)
 
-*(Tambah screenshot lain setelah di-upload)*
 
 ---
 
