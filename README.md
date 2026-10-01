@@ -162,7 +162,7 @@ Setelah login, otomatis redirect:
 
 ## 🎥 Video Demo
 
-[![Demo Video](https://img.shields.io/badge/YouTube-Watch-red?style=flat&logo=youtube)](https://youtu.be/xxxxx)
+[![Demo Video](https://img.shields.io/badge/YouTube-Watch-red?style=flat&logo=youtube)](https://youtu.be/gr_H8QldiKk?si=WEcBkBbLiL8u7d7E)
 
 *(Update link setelah upload ke YouTube)*
 
